@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Xmpp_Test</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Logout</string>
+    <string name="userName">帳號</string>
+    <string name="pwd">密碼</string>
+    <string name="Login">登入</string>
+    <string name="title_activity_login">LoginActivity</string>
+</resources>
