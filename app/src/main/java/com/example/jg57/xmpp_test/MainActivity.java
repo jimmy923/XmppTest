@@ -35,7 +35,7 @@ public class MainActivity extends ActionBarActivity {
         Button btnSendMsg = (Button) findViewById(R.id.btnSendMsg);
         context = this;
         setting = getSharedPreferences("LoginData" ,0);
-        ccs = new ClientConServer(context);
+        ccs = new ClientConServer();
 
         //設定寄送按鈕操作
         btnSendMsg.setOnClickListener(new View.OnClickListener() {
@@ -76,6 +76,9 @@ public class MainActivity extends ActionBarActivity {
         if(!ccs.hasConnection()){
             Intent intent = new Intent(context, LoginActivity.class);
             startActivity(intent);
+        }else{
+            Intent intent = new Intent(this, XmppService.class);
+            startService(intent);
         }
     }
 

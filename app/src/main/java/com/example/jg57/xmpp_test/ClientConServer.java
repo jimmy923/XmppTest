@@ -23,14 +23,9 @@ import org.jivesoftware.smack.packet.Message;
  */
 public class ClientConServer {
     private final static int XmppPORT = 5222;
-    private static Context context;
     private static Connection connection;
     private static String userName;
-
-    public ClientConServer(Context context){
-        ClientConServer.context = context;
-    }
-    public ClientConServer(){ }
+    private static Handler handler;
 
     public boolean login(String userName,String Pwd){
         //連接的網址和PORT
@@ -44,9 +39,6 @@ public class ClientConServer {
             connection.connect();
             connection.login(userName,Pwd);
             ClientConServer.userName = userName;
-            ChatManager chatManager = connection.getChatManager();
-            //設定新訊息監聽
-            chatManager.addChatListener(new MyChatManagerListener());
             return true;
         }catch(Exception ex){
             ex.printStackTrace();
@@ -60,16 +52,18 @@ public class ClientConServer {
         Chat myChat = connection.getChatManager().createChat(to + "@" + connection.getServiceName() , new MessageListener() {
             @Override
             public void processMessage(Chat chat, Message message) {
-                Log.i("---",message.getFrom()+"說:" + message.getBody());
+                android.os.Message m = handler.obtainMessage();
+                m.obj = message;
+                m.sendToTarget();
             }
         });
         Message message = new Message();
         message.setBody(msg);
-        String[] msgList = new String[]{
-            userName,
-            msg
-        };
-        ((MainActivity)context).writeMsg(msgList);
+//        String[] msgList = new String[]{
+//            userName,
+//            msg
+//        };
+        //((MainActivity)context).writeMsg(msgList);
         myChat.sendMessage(message);
     }
 
@@ -83,30 +77,13 @@ public class ClientConServer {
         connection.disconnect();
     }
 
-    private Handler handler = new Handler(){
-        @Override
-        public void handleMessage(android.os.Message msg) {
-            super.handleMessage(msg);
-            Message message = (Message) msg.obj;
-            String[] msgList = new String[]{
-                message.getFrom(),
-                message.getBody()
-            };
-            //設定Notification
-            NotificationManager barManger = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
-            Intent intent = new Intent(context, MainActivity.class);
-            PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            Notification.Builder barMsg = new Notification.Builder(context)
-                .setTicker("你有一封新Message")
-                .setContentTitle("你有一封新Message")
-                .setContentText(msgList[1])
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentIntent(pendingIntent);
-            barManger.notify(0,barMsg.build());
 
-            ((MainActivity)context).writeMsg(msgList);
-        }
-    };
+    public void setManagerListener(Handler handler){
+        ClientConServer.handler = handler;
+        ChatManager chatManager = connection.getChatManager();
+        //設定新訊息監聽
+        chatManager.addChatListener(new MyChatManagerListener());
+    }
 
     class MyChatManagerListener implements ChatManagerListener {
         public void chatCreated(Chat chat, boolean arg){
